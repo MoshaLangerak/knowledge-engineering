@@ -31,7 +31,7 @@ def build_knowledge_graph():
         import_business_data(conn)  
 
         # 3. Create relationships between imported data
-        create_relationships(conn)
+        # create_relationships(conn)
 
         print("Knowledge graph build process completed successfully!")
 
