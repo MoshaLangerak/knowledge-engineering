@@ -24,6 +24,7 @@ def create_constraints_and_indexes(conn: Neo4jConnection):
 
 if __name__ == "__main__":
     db_connection = Neo4jConnection(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD)
-    if db_connection._Neo4jConnection__driver: # Check if connection was successful
+
+    if db_connection._Neo4jConnection__driver:
         create_constraints_and_indexes(db_connection)
         db_connection.close()
