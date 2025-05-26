@@ -6,11 +6,11 @@ def import_business_data(conn: Neo4jConnection):
     """
     query = """
     LOAD CSV WITH HEADERS FROM 'file:///businesses_with_boroughs.csv' AS row
-    CREATE (b:Business {{
+    CREATE (b:Business {
         osmId: row.osm_id,
         name: row.name_business,
-        type: row.fclass
-    }})
+        type: row.fclass,
+    })
     """
     conn.query(query)
     print("Data import complete.")

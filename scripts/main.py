@@ -1,6 +1,6 @@
-from scripts.connect import Neo4jConnection, NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD
-from scripts.schema_setup import create_constraints_and_indexes
-from scripts.data_importer import import_business_data
+from connect import Neo4jConnection, NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD
+from schema_setup import create_constraints_and_indexes
+from data_importer import import_business_data
 
 
 def clear_database(conn: Neo4jConnection):
