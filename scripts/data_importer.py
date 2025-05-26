@@ -6,14 +6,35 @@ def import_business_data(conn: Neo4jConnection):
     """
     query = """
     LOAD CSV WITH HEADERS FROM 'file:///businesses_with_boroughs.csv' AS row
-    CREATE (b:Business {
+    CREATE (b:Business {name: row.name_business})
+    SET
         osmId: row.osm_id,
-        name: row.name_business,
-        type: row.fclass,
-    })
+        type: row.fclass
     """
     conn.query(query)
-    print("Data import complete.")
+    print("Business data import complete.")
+
+
+
+def import_population_data(conn: Neo4jConnection):
+    """
+    Imports population data from a CSV file into the Neo4j database.
+    """
+    query = """
+    LOAD CSV WITH HEADERS FROM 'file:///population_by_borough.csv' AS row
+    CREATE (b:Borough {name: row.area_name})
+    SET
+        b.mid_year_estimate_1939 = toInteger(row.mid-year_estimate_1939),
+        b.mid_year_estimate_1988 = toInteger(row.mid-year_estimate_1988),
+        b.census_2011 = toInteger(row.census_2011),
+        b.projection_2015 = toInteger(row.projection_2015),
+        b.projection_2021 = toInteger(row.projection_2021),
+        b.projection_2031 = toInteger(row.projection_2031),
+        b.projection_2039 = toInteger(row.projection_2039)
+    """
+    conn.query(query)
+    print("Population data import complete.")
+
 
 if __name__ == "__main__":
     db_connection = Neo4jConnection(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD)
