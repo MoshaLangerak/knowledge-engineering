@@ -1,6 +1,6 @@
 from connect import Neo4jConnection, NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD
 from schema_setup import create_constraints_and_indexes
-from data_importer import import_business_data
+from data_importer import import_business_data, import_population_data
 
 
 def clear_database(conn: Neo4jConnection):
@@ -28,7 +28,8 @@ def build_knowledge_graph():
         create_constraints_and_indexes(conn)
 
         # 2. Import data
-        import_business_data(conn)  
+        import_business_data(conn) 
+        import_population_data(conn)
 
         # 3. Create relationships between imported data
         # create_relationships(conn)
