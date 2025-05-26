@@ -41,7 +41,7 @@ This guide will help you set up Neo4j locally, connect it with Python, and struc
 
 ```plaintext
 NEO4J_URI=bolt://localhost:7687
-NEO4J_USERNAME=neo4j
+NEO4J_USER=neo4j
 NEO4J_PASSWORD=your_password
 ```
 - Replace `your_password` with the password you set for your Neo4j database.
