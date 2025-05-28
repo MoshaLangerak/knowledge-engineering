@@ -46,5 +46,6 @@ def build_knowledge_graph():
         if conn:
             conn.close()
 
-if __name__ == "__main__":
-    build_knowledge_graph()
+# Example driver code 
+# if __name__ == "__main__":
+#     build_knowledge_graph()

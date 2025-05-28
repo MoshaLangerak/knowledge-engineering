@@ -34,10 +34,11 @@ def import_population_data(conn: Neo4jConnection):
     print("Population data import complete.")
 
 
-if __name__ == "__main__":
-    db_connection = Neo4jConnection(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD)
+# Example driver code 
+# if __name__ == "__main__":
+#     db_connection = Neo4jConnection(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD)
     
-    if db_connection._Neo4jConnection__driver:
-        import_business_data(db_connection)
-        import_population_data(db_connection)
+#     if db_connection._Neo4jConnection__driver:
+#         import_business_data(db_connection)
+#         import_population_data(db_connection)
         
