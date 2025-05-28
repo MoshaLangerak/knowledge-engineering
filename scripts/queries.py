@@ -8,3 +8,23 @@ def run_query(conn: Neo4jConnection):
         print(f"Pub names: {[record['b.name'] for record in business_name_pub[0][:3]]}")
     else:
         print("No pubs found.")
+
+def example_query_borough_businesses(conn: Neo4jConnection):
+    """
+    For each Borough, get up to 10 connected Business nodes and their LOCATED_IN relationships.
+    """
+    query = """
+    MATCH (br:Borough)
+    CALL {
+        WITH br
+        MATCH (b:Business)-[r:LOCATED_IN]->(br)
+        RETURN b, r
+        LIMIT 10
+    }
+    RETURN br, b, r
+    """
+    result = conn.query(query)
+    if result and result[0]:
+        print(f"Example: Borough '{result[0][0]['br']['name']}' has businesses like {[rec['b']['name'] for rec in result[0][:3]]}")
+    else:
+        print("No borough-business relationships found.")

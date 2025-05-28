@@ -1,7 +1,8 @@
 from connect import Neo4jConnection, NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD
 from schema_setup import create_constraints_and_indexes
 from data_importer import import_business_data, import_population_data
-from queries import run_query
+from create_relationships import create_relationships
+from queries import example_query_borough_businesses
 
 
 def clear_database(conn: Neo4jConnection):
@@ -33,10 +34,10 @@ def build_knowledge_graph():
         import_population_data(conn)
 
         # 3. Create relationships between imported data
-        # create_relationships(conn)
+        create_relationships(conn)
 
         # 4. Runs queries on the graph to obtain information
-        run_query(conn)
+        example_query_borough_businesses(conn)
 
         print("Knowledge graph build process completed successfully!")
 
@@ -46,6 +47,7 @@ def build_knowledge_graph():
         if conn:
             conn.close()
 
+
 # Example driver code 
-# if __name__ == "__main__":
-#     build_knowledge_graph()
+if __name__ == "__main__":
+    build_knowledge_graph()

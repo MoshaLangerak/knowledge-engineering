@@ -6,7 +6,7 @@ def import_business_data(conn: Neo4jConnection):
     """
     query = """
     LOAD CSV WITH HEADERS FROM 'file:///businesses_with_boroughs.csv' AS row
-    CREATE (b:Business {name: row.name_business})
+    MERGE (b:Business {name: row.name_business})
     SET
         b.osmId = row.osm_id,
         b.type = row.fclass
@@ -16,11 +16,14 @@ def import_business_data(conn: Neo4jConnection):
 
 def import_population_data(conn: Neo4jConnection):
     """
-    Imports population data from a CSV file into the Neo4j database.
+    Imports population data from a CSV file into the Neo4j database,
+    skipping rows where area_name is 'Inner London', 'Outer London', or 'Greater London'.
     """
     query = """
     LOAD CSV WITH HEADERS FROM 'file:///population_by_borough.csv' AS row
-    CREATE (b:Borough {name: row.area_name})
+    WITH row
+    WHERE NOT row.area_name IN ['Inner London', 'Outer London', 'Greater London']
+    MERGE (b:Borough {name: row.area_name})
     SET
         b.mid_year_estimate_1939 = toInteger(row.mid_year_estimate_1939),
         b.mid_year_estimate_1988 = toInteger(row.mid_year_estimate_1988),
