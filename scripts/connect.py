@@ -44,17 +44,17 @@ class Neo4jConnection:
         
 
 # Example driver code 
-# if __name__ == "__main__":
-#     conn = Neo4jConnection(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD)
-#     # Example query to create a node
-#     records, _, _ = conn.query("CREATE (n:Person {name: 'Alice'}) RETURN n")
+if __name__ == "__main__":
+    conn = Neo4jConnection(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD)
+    # Example query to create a node
+    records, _, _ = conn.query("CREATE (n:Person {name: 'Alice'}) RETURN n")
 
-#     # Example query display the current node count
-#     records, _, _ = conn.query("MATCH (n) RETURN count(n) AS node_count")
-#     if records:
-#        print(f"Current node count: {records[0]['node_count']}")
+    # Example query display the current node count
+    records, _, _ = conn.query("MATCH (n) RETURN count(n) AS node_count")
+    if records:
+       print(f"Current node count: {records[0]['node_count']}")
 
-#     # Example query to delete a node
-#     records, _, _ = conn.query("MATCH (n:Person {name: 'Alice'}) DELETE n")
+    # # Example query to delete a node
+    # records, _, _ = conn.query("MATCH (n:Person {name: 'Alice'}) DELETE n")
 
-#     conn.close()
+    # conn.close()
