@@ -1,39 +1,48 @@
 from connect import Neo4jConnection, NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD
+import pandas as pd
 
 def import_business_data(conn: Neo4jConnection):
     """
-    Imports business data from a CSV file into the Neo4j database.
+    Imports business data from a CSV using UNWIND.
     """
+    df = pd.read_csv("data/processed/businesses_with_boroughs.csv")
+
+    data = df.to_dict(orient="records")
+    
     query = """
-    LOAD CSV WITH HEADERS FROM 'file:///businesses_with_boroughs.csv' AS row
-    MERGE (b:Business {name: row.name_business})
-    SET
-        b.osmId = row.osm_id,
-        b.type = row.fclass
+    UNWIND $rows AS row
+    CREATE (b:Business {
+        name: row.name_business,
+        osmId: row.osm_id,
+        type: row.fclass
+    })
     """
-    conn.query(query)
+    conn.query(query, parameters={"rows": data})
     print("Business data import complete.")
 
 def import_population_data(conn: Neo4jConnection):
     """
-    Imports population data from a CSV file into the Neo4j database,
-    skipping rows where area_name is 'Inner London', 'Outer London', or 'Greater London'.
+    Imports population data from a CSV using UNWIND.
     """
+    df = pd.read_csv("data/processed/population_by_borough.csv")
+    df = df.fillna(0)
+
+    data = df.to_dict(orient="records")
+
     query = """
-    LOAD CSV WITH HEADERS FROM 'file:///population_by_borough.csv' AS row
-    WITH row
-    WHERE NOT row.area_name IN ['Inner London', 'Outer London', 'Greater London']
-    MERGE (b:Borough {name: row.area_name})
-    SET
-        b.mid_year_estimate_1939 = toInteger(row.mid_year_estimate_1939),
-        b.mid_year_estimate_1988 = toInteger(row.mid_year_estimate_1988),
-        b.census_2011 = toInteger(row.census_2011),
-        b.projection_2015 = toInteger(row.projection_2015),
-        b.projection_2021 = toInteger(row.projection_2021),
-        b.projection_2031 = toInteger(row.projection_2031),
-        b.projection_2039 = toInteger(row.projection_2039)
+    UNWIND $rows AS row
+    CREATE (b:Borough {
+        name: row.area_name,
+        mid_year_estimate_1939: toInteger(row.mid_year_estimate_1939),
+        mid_year_estimate_1988: toInteger(row.mid_year_estimate_1988),
+        census_2011: toInteger(row.census_2011),
+        projection_2015: toInteger(row.projection_2015),
+        projection_2021: toInteger(row.projection_2021),
+        projection_2031: toInteger(row.projection_2031),
+        projection_2039: toInteger(row.projection_2039)
+    })
     """
-    conn.query(query)
+    conn.query(query, parameters={"rows": data})
     print("Population data import complete.")
 
 

@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from connect import Neo4jConnection, NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD
+from main import build_knowledge_graph
 
 # Initialize Neo4j connection
 def get_connection():
@@ -9,6 +10,14 @@ def get_connection():
 conn = get_connection()
 
 st.title("Neo4j Query Explorer")
+
+# Button to build the knowledge graph
+if st.button("Build Knowledge Graph"):
+    try:
+        build_knowledge_graph()
+        st.success("Knowledge graph build completed successfully!")
+    except Exception as e:
+        st.error(f"An error occurred during graph build: {e}")
 
 # Sidebar: Select or enter Cypher query
 preset_queries = {
@@ -20,11 +29,10 @@ selection = st.sidebar.selectbox("Choose a preset query", list(preset_queries.ke
 custom_query = st.sidebar.text_area("Or enter a custom Cypher query", height=100)
 
 # Run query
-
 if st.sidebar.button("Run Query"):
     query = custom_query if custom_query.strip() else preset_queries[selection]
     records, summary, keys = conn.query(query)
-    
+
     if records:
         # Convert Neo4j records to DataFrame
         data = [record.data() for record in records]
