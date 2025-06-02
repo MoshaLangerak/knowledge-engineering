@@ -1,25 +1,64 @@
 from connect import Neo4jConnection, NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD
 import pandas as pd
 
+# Why separate BusinessType nodes?
+# - Querying: Enables efficient queries for all businesses of a certain type.
+# - Normalization: Avoids duplication of type strings across many business nodes.
+# - Extensibility: Allows adding attributes to business types in the future.
+
 def import_business_data(conn: Neo4jConnection):
     """
     Imports business data from a CSV using UNWIND.
+    Creates a Business node for each business, a BusinessType node for each unique type,
+    and links each Business to its BusinessType.
     """
     df = pd.read_csv("data/processed/businesses_with_boroughs.csv")
-
     data = df.to_dict(orient="records")
     
     query = """
     UNWIND $rows AS row
-    CREATE (b:Business {
+    MERGE (bt:BusinessType {type: row.fclass})
+    MERGE (b:Business {
         name: row.name_business,
-        osmId: row.osm_id,
-        type: row.fclass
+        osmId: row.osm_id
     })
+    MERGE (b)-[:OF_TYPE]->(bt)
     """
     conn.query(query, parameters={"rows": data})
     print("Business data import complete.")
 
+
+# Why choose node per borough-year?
+
+# Querying: Easy to get all boroughs for a year, or all years for a borough.
+# Updating: Add or update a year’s data without schema changes.
+# Extending: Add new attributes (e.g., source, confidence, projections) per year.
+# Provenance: Track where each year’s data came from.
+def import_population_density_data(conn: Neo4jConnection):
+    """
+    Imports population density data from a CSV using UNWIND.
+    Creates a Population node for each borough-year and links it to the Borough node.
+    """
+    df = pd.read_csv("data/raw/housing_density_borough.csv")
+    data = df.to_dict(orient="records")
+
+    query = """
+    UNWIND $rows AS row
+    MERGE (b:Borough {name: row.Name})
+    MERGE (p:Population {
+        year: toInteger(row.Year),
+        source: row.Source,
+        population: toInteger(row.Population),
+        population_per_sqkm: toFloat(row.Population_per_square_kilometre)
+    })
+    MERGE (b)-[:HAS_POPULATION {year: toInteger(row.Year)}]->(p)
+    """
+
+    conn.query(query, parameters={"rows": data})
+    print("Population density data import complete.")
+
+
+# old population data import
 def import_population_data(conn: Neo4jConnection):
     """
     Imports population data from a CSV using UNWIND.
@@ -31,7 +70,7 @@ def import_population_data(conn: Neo4jConnection):
 
     query = """
     UNWIND $rows AS row
-    CREATE (b:Borough {
+    MERGE (b:Borough {
         name: row.area_name,
         mid_year_estimate_1939: toInteger(row.mid_year_estimate_1939),
         mid_year_estimate_1988: toInteger(row.mid_year_estimate_1988),

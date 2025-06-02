@@ -1,7 +1,7 @@
 from connect import Neo4jConnection
 import pandas as pd
 
-def create_relationships(conn: Neo4jConnection):
+def connect_businesses_to_boroughs(conn: Neo4jConnection):
     """
     Efficiently creates 'LOCATED_IN' relationships between Business and Borough nodes
     using in-memory data instead of file-based CSV loading.
@@ -19,4 +19,3 @@ def create_relationships(conn: Neo4jConnection):
     """
     conn.query(query, parameters={"rows": data})
     print("Business-Borough relationships created.")
-
