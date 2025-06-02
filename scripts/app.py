@@ -39,7 +39,7 @@ def show_graph_view(records):
 
         G.add_node(source_label, label=source_label, title=source_tooltip, color=get_node_color(source))
         G.add_node(target_label, label=target_label, title=target_tooltip, color=get_node_color(target))
-        G.add_edge(source_label, target_label, title=relation, label=relation, font={"size": 14, "color": "white", "face": "arial", "strokeWidth": 0, "bold": False}
+        G.add_edge(source_label, target_label, title=relation, label=relation, arrows="to", font={"size": 14, "color": "white", "face": "arial", "strokeWidth": 0, "bold": False}
 )
 
     net = Network(height="600px", width="100%", bgcolor="#222222", font_color="white")
