@@ -1,15 +1,16 @@
 from connect import Neo4jConnection
 import pandas as pd
 
-def connect_businesses_to_boroughs(conn: Neo4jConnection):
+def connect_businesses_to_boroughs(conn: Neo4jConnection, test_boroughs=[], st_print=print):
     """
-    Efficiently creates 'LOCATED_IN' relationships between Business and Borough nodes
-    using in-memory data instead of file-based CSV loading.
+    Efficiently creates 'LOCATED_IN' relationships between Business and Borough nodes.
+    If test=True, only creates relationships for two boroughs.
     """
+    st_print("Creating relationships between businesses and boroughs...")
     df = pd.read_csv("data/processed/businesses_with_boroughs.csv")
-    df = df.dropna(subset=['osm_id', 'area'])
-
-    data = df.to_dict(orient="records")[:25]
+    if test_boroughs:
+        df = df[df["area"].isin(test_boroughs)]
+    data = df.to_dict(orient="records")
 
     query = """
     UNWIND $rows AS row
@@ -18,4 +19,4 @@ def connect_businesses_to_boroughs(conn: Neo4jConnection):
     MERGE (b)-[:LOCATED_IN]->(br)
     """
     conn.query(query, parameters={"rows": data})
-    print("Business-Borough relationships created.")
+    st_print("Business-Borough relationships created.")

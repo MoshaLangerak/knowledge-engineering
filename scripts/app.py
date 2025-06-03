@@ -115,7 +115,7 @@ st.title("London-DB")
 
 if st.sidebar.button("Build Knowledge Graph"):
     try:
-        build_knowledge_graph()
+        build_knowledge_graph(st)
         st.success("Knowledge graph build completed successfully!")
     except Exception as e:
         st.error(f"An error occurred during graph build: {e}")
