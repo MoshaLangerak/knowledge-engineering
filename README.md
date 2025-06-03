@@ -53,20 +53,13 @@ NEO4J_PASSWORD=your_password
 pip install -r requirements.txt
 ```
 
-### 3. Test the Connection
-- Run the following command in your terminal to test wether the connection to Neo4j is successful:
-```bash
-python scripts/connect.py
-```
-- If the connection is successful, you should see a message indicating that the connection was established and that the basic queries were executed successfully.
-
-### 4. Move the CSV files
+### 3. (optional) Move the CSV files
 - Move the CSV files from the `data/processed` folder to the `import` folder of Neo4j.
 - Go to the Neo4j Desktop application, select the three dots next to your database, and click on **"Open Folder"**.
 - Select the `import` folder and move the CSV files there.
 
-### 5. Run the Project
+### 4. Run the Project
 - To run the project, execute the following command in your terminal:
 ```bash
-python scripts/main.py
+python streamlit run .\knowledge-graph-app\src\app.py
 ```
