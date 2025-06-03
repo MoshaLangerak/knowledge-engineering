@@ -2,6 +2,10 @@ import plotly.graph_objects as go
 import networkx as nx
 from typing import List, Dict, Any
 
+import plotly.express as px
+import pandas as pd
+
+
 def plot_borough_business_graph(data: List[Dict[str, Any]], selected_borough: str) -> go.Figure:
     """
     Plots a network graph of boroughs and their connections to the selected borough.
@@ -24,8 +28,9 @@ def plot_borough_business_graph(data: List[Dict[str, Any]], selected_borough: st
         if b != selected_borough:
             G.add_edge(selected_borough, b)
     
-    # Layout
-    pos = nx.spring_layout(G, seed=42)
+    # Improve spacing to avoid overlaps
+    k_val = 1 / (len(G.nodes) ** 0.05)  # dynamic spacing based on node count
+    pos = nx.spring_layout(G, seed=42, k=k_val)
 
     # Edges
     edge_x, edge_y = [], []
@@ -41,6 +46,10 @@ def plot_borough_business_graph(data: List[Dict[str, Any]], selected_borough: st
         hoverinfo='none',
         mode='lines'
     )
+
+    # Get min/max ratio for color normalization
+    ratios = [G.nodes[n]['ratio'] for n in G.nodes]
+    ratio_min, ratio_max = min(ratios), max(ratios)
 
     # Nodes
     node_x, node_y, sizes, colors, labels, hovers = [], [], [], [], [], []
@@ -69,9 +78,12 @@ def plot_borough_business_graph(data: List[Dict[str, Any]], selected_borough: st
         hovertext=hovers,
         marker=dict(
             showscale=True,
-            colorscale='Blues',
+            colorscale='Viridis',
             color=colors,
+            cmin=ratio_min,
+            cmax=ratio_max,
             size=sizes,
+            opacity=1,
             colorbar=dict(
                 thickness=15,
                 title='Business/Population Ratio',
@@ -81,7 +93,6 @@ def plot_borough_business_graph(data: List[Dict[str, Any]], selected_borough: st
         )
     )
 
-    # Final layout using current Plotly syntax
     fig = go.Figure(
         data=[edge_trace, node_trace],
         layout=go.Layout(
@@ -104,4 +115,25 @@ def plot_borough_business_graph(data: List[Dict[str, Any]], selected_borough: st
         )
     )
     
+    return fig
+
+
+def plot_borough_bubble_chart(data):
+    df = pd.DataFrame(data)
+    fig = px.scatter(
+        df,
+        x="borough",
+        y=[0]*len(df),  # All on one line, or use another dimension if available
+        size="population",
+        color="business_to_population_ratio",
+        color_continuous_scale="Viridis",
+        hover_name="borough",
+        size_max=60,
+        labels={"business_to_population_ratio": "Businesses per 10k"}
+    )
+    fig.update_yaxes(visible=False)
+    fig.update_layout(
+        title="Boroughs: Size = Population, Color = Businesses per 10k",
+        showlegend=False
+    )
     return fig

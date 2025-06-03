@@ -1,6 +1,6 @@
 # Modular query logic for visualization: get boroughs, populations, business counts, and ratios
 
-def get_visualization_data(conn, borough_name, year, business_type):
+def get_bubble_chart_data(conn, borough_name, year, business_type):
     """
     Returns a dict with boroughs, populations, business counts, and business/population ratios
     for the selected borough and its neighbours, for a given year and business type.
