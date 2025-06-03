@@ -1,16 +1,17 @@
-from connect import Neo4jConnection, NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD
+import streamlit as st
 import pandas as pd
+import numpy as np
+
 
 # Why separate BusinessType nodes?
 # - Querying: Enables efficient queries for all businesses of a certain type.
 # - Normalization: Avoids duplication of type strings across many business nodes.
 # - Extensibility: Allows adding attributes to business types in the future.
-
-def import_business_data(conn: Neo4jConnection, test_boroughs=[], st_print=print):
+def import_business_data(conn, test_boroughs=[]):
     """
     Efficiently imports business data and business types.
     """
-    st_print("Importing business data...")
+    st.info("Importing business data...")
     df = pd.read_csv("data/processed/businesses_with_boroughs.csv")
     if test_boroughs:
         df = df[df["area"].isin(test_boroughs)]
@@ -36,7 +37,7 @@ def import_business_data(conn: Neo4jConnection, test_boroughs=[], st_print=print
     MERGE (bt)-[:TYPE_FOR]->(b)
     """
     conn.query(business_query, parameters={"rows": data})
-    st_print("Business data import complete.")
+    st.info("Business data import complete.")
 
 
 # Why choose node per borough-year?
@@ -44,13 +45,13 @@ def import_business_data(conn: Neo4jConnection, test_boroughs=[], st_print=print
 # - Updating: Add or update a year’s data without schema changes.
 # - Extending: Add new attributes (e.g., source, confidence, projections) per year.
 # - Provenance: Track where each year’s data came from.
-def import_population_density_data(conn: Neo4jConnection, test_boroughs=[], st_print=print):
+def import_population_density_data(conn, test_boroughs=[]):
     """
     Imports population density data from a CSV using UNWIND.
     Creates a Population node for each borough-year and links it to the Borough node.
     If test_boroughs is set, only imports population data for those boroughs.
     """
-    st_print("Importing population density data...")
+    st.info("Importing population density data...")
     df = pd.read_csv("data/processed/housing_density_borough.csv")
     if test_boroughs:
         df = df[df["Name"].isin(test_boroughs)]
@@ -77,47 +78,50 @@ def import_population_density_data(conn: Neo4jConnection, test_boroughs=[], st_p
     MERGE (b)-[:HAS_POPULATION {year: toInteger(row.Year)}]->(p)
     """
     conn.query(query, parameters={"rows": data})
-    st_print("Population density data import complete.")
+    st.info("Population density data import complete.")
 
 
-def import_business_survival_rate_data(conn: Neo4jConnection, test_boroughs=[], st_print=print):
+def import_business_survival_rate_data(conn, test_boroughs=[]):
     """
     Imports business survival rate data from CSV.
     Creates a BusinessSurvival node for each borough-year and links it to the Borough node.
-    Handles missing values for survival rates.
+    Only sets properties for non-null values in the dataframe.
     If test_boroughs is set, only imports data for those boroughs.
     """
-    st_print("Importing business survival rate data...")
+    st.info("Importing business survival rate data...")
     df = pd.read_csv("data/processed/boroughs_business_survival_rate.csv")
     if test_boroughs:
         df = df[df["area"].isin(test_boroughs)]
-    data = df.to_dict(orient="records")
+    df = df.replace({np.nan: None})
 
-    # Step 1: Create unique Borough nodes
-    unique_boroughs = [{"name": n} for n in df["area"].dropna().unique()]
-    borough_query = """
-    UNWIND $rows AS row
-    MERGE (:Borough {name: row.name})
-    """
-    conn.query(borough_query, parameters={"rows": unique_boroughs})
+    # Only include non-null properties for each row
+    def row_to_props(row):
+        props = {
+            "year": int(row["year"]),
+        }
+        if row["births"] is not None:
+            props["births"] = int(row["births"])
+        for n in range(1, 6):
+            col = f"{n}_year_survival_rate"
+            if row.get(col) is not None:
+                props[f"{n}_year_rate"] = float(row[col])
+        return {
+            "area": row["area"],
+            "props": props
+        }
 
-    # Step 2: Create BusinessSurvival nodes and relationships, handling missing values
+    data = [row_to_props(row) for _, row in df.iterrows()]
+
+    # Create BusinessSurvival nodes and relationships, only setting non-null properties
     query = """
     UNWIND $rows AS row
     MATCH (b:Borough {name: row.area})
-    MERGE (bs:BusinessSurvival {
-        year: toInteger(row.year),
-        births: CASE WHEN row.births IS NOT NULL THEN toInteger(row.births) ELSE null END,
-        one_year: CASE WHEN row.`1_year_survival_rate` IS NOT NULL THEN toFloat(row.`1_year_survival_rate`) ELSE null END,
-        two_year: CASE WHEN row.`2_year_survival_rate` IS NOT NULL THEN toFloat(row.`2_year_survival_rate`) ELSE null END,
-        three_year: CASE WHEN row.`3_year_survival_rate` IS NOT NULL THEN toFloat(row.`3_year_survival_rate`) ELSE null END,
-        four_year: CASE WHEN row.`4_year_survival_rate` IS NOT NULL THEN toFloat(row.`4_year_survival_rate`) ELSE null END,
-        five_year: CASE WHEN row.`5_year_survival_rate` IS NOT NULL THEN toFloat(row.`5_year_survival_rate`) ELSE null END
-    })
-    MERGE (b)-[:HAS_BUSINESS_SURVIVAL {year: toInteger(row.year)}]->(bs)
+    MERGE (bs:BusinessSurvival {year: row.props.year})
+    SET bs += row.props
+    MERGE (b)-[:HAS_BUSINESS_SURVIVAL {year: row.props.year}]->(bs)
     """
     conn.query(query, parameters={"rows": data})
-    st_print("Business survival rate data import complete.")
+    st.info("Business survival rate data import complete.")
 
 
 # # old population data import
@@ -143,13 +147,3 @@ def import_business_survival_rate_data(conn: Neo4jConnection, test_boroughs=[], 
 #     """
 #     conn.query(query, parameters={"rows": data})
 #     print("Population data import complete.")
-
-
-# Example driver code 
-# if __name__ == "__main__":
-#     db_connection = Neo4jConnection(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD)
-    
-#     if db_connection._Neo4jConnection__driver:
-#         import_business_data(db_connection)
-#         import_population_data(db_connection)
-        

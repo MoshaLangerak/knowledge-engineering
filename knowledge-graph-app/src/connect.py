@@ -1,6 +1,7 @@
 from neo4j import GraphDatabase
 import os
 from dotenv import load_dotenv
+import streamlit as st
 
 # Load environment variables from .env file
 load_dotenv()
@@ -40,20 +41,12 @@ class Neo4jConnection:
         except Exception as e:
             print(f"Query failed: {e}")
             return None, None, None
-        
 
-# Example driver code 
-if __name__ == "__main__":
-    conn = Neo4jConnection(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD)
-    # Example query to create a node
-    records, _, _ = conn.query("CREATE (n:Person {name: 'Alice'}) RETURN n")
 
-    # Example query display the current node count
-    records, _, _ = conn.query("MATCH (n) RETURN count(n) AS node_count")
-    if records:
-       print(f"Current node count: {records[0]['node_count']}")
-
-    # # Example query to delete a node
-    # records, _, _ = conn.query("MATCH (n:Person {name: 'Alice'}) DELETE n")
-
-    # conn.close()
+def get_connection():
+    try:
+        conn = Neo4jConnection(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD)
+        st.info("Successfully connected to Neo4j!")
+        return conn
+    except Exception as e:
+       st.error(f"Failed to connect to Neo4j. Aborting build. {e}")

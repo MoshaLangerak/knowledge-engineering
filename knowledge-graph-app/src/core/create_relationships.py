@@ -1,12 +1,13 @@
-from connect import Neo4jConnection
+import streamlit as st
 import pandas as pd
 
-def connect_businesses_to_boroughs(conn: Neo4jConnection, test_boroughs=[], st_print=print):
+
+def connect_businesses_to_boroughs(conn, test_boroughs=[]):
     """
     Efficiently creates 'LOCATED_IN' relationships between Business and Borough nodes.
     If test=True, only creates relationships for two boroughs.
     """
-    st_print("Creating relationships between businesses and boroughs...")
+    st.info("Creating relationships between businesses and boroughs...")
     df = pd.read_csv("data/processed/businesses_with_boroughs.csv")
     if test_boroughs:
         df = df[df["area"].isin(test_boroughs)]
@@ -19,15 +20,15 @@ def connect_businesses_to_boroughs(conn: Neo4jConnection, test_boroughs=[], st_p
     MERGE (b)-[:LOCATED_IN]->(br)
     """
     conn.query(query, parameters={"rows": data})
-    st_print("Business-Borough relationships created.")
+    st.info("Business-Borough relationships created.")
 
 
-def connect_neighbouring_boroughs(conn: Neo4jConnection, test_boroughs=[], st_print=print):
+def connect_neighbouring_boroughs(conn, test_boroughs=[]):
     """
     Creates symmetric NEIGHBOURS relationships between Borough nodes.
     If test_boroughs is provided, only creates relationships where both boroughs are in test_boroughs.
     """
-    st_print("Creating neighbouring borough relationships...")
+    st.info("Creating neighbouring borough relationships...")
     df = pd.read_csv("data/processed/neighbouring_boroughs.csv")
     if test_boroughs:
         df = df[df["borough1"].isin(test_boroughs) & df["borough2"].isin(test_boroughs)]
@@ -41,17 +42,17 @@ def connect_neighbouring_boroughs(conn: Neo4jConnection, test_boroughs=[], st_pr
     MERGE (b2)-[:NEIGHBOURS]->(b1)
     """
     conn.query(query, parameters={"rows": data})
-    st_print("Neighbouring borough relationships created.")
+    st.info("Neighbouring borough relationships created.")
 
 
-def connect_boroughs_to_aggregate(conn: Neo4jConnection, test_boroughs=[], st_print=print):
+def connect_boroughs_to_aggregate(conn, test_boroughs=[]):
     """
     Creates PART_OF relationships from Boroughs to aggregate boroughs:
     - Inner / Outer London -> Greater London
     - Boroughs -> Inner London or Outer London (from CSV)
     If test_boroughs is provided, only creates relationships for those boroughs.
     """
-    st_print("Creating relationships between boroughs and aggregate boroughs...")
+    st.info("Creating relationships between boroughs and aggregate boroughs...")
 
     # Only Inner London and Outer London to Greater London
     query_greater = """
@@ -76,4 +77,4 @@ def connect_boroughs_to_aggregate(conn: Neo4jConnection, test_boroughs=[], st_pr
     """
     conn.query(query_agg, parameters={"rows": data})
 
-    st_print("Borough-aggregate relationships created.")
+    st.info("Borough-aggregate relationships created.")
