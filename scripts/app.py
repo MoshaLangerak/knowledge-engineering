@@ -115,7 +115,12 @@ st.title("London-DB")
 
 if st.sidebar.button("Build Knowledge Graph"):
     try:
-        build_knowledge_graph(st)
+        # TODO: could make this a selectbox in streamlit, but keep in mind aggregate boroughs always needed, else errors occur
+        # empty list means create full graph
+        test_boroughs = [] # (if not empty: at least add Greater London, Inner London, Outer London)
+
+        st.info("Building knowledge graph, this may take a while...")
+        build_knowledge_graph(st, test_boroughs)
         st.success("Knowledge graph build completed successfully!")
     except Exception as e:
         st.error(f"An error occurred during graph build: {e}")

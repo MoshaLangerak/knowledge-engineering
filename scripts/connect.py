@@ -19,7 +19,6 @@ class Neo4jConnection:
         try:
             self.__driver = GraphDatabase.driver(self.__uri, auth=(self.__user, self.__password))
             self.__driver.verify_connectivity()
-            print("Successfully connected to Neo4j!")
         except Exception as e:
             print(f"Failed to create the driver: {e}")
 

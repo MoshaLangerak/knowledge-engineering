@@ -1,0 +1,69 @@
+borough1,borough2
+Kingston upon Thames,Sutton
+Kingston upon Thames,Richmond upon Thames
+Kingston upon Thames,Merton
+Kingston upon Thames,Wandsworth
+Croydon,Lambeth
+Croydon,Sutton
+Croydon,Merton
+Bromley,Croydon
+Bromley,Lambeth
+Bromley,Southwark
+Bromley,Lewisham
+Bromley,Greenwich
+Hounslow,Richmond upon Thames
+Ealing,Hounslow
+Ealing,Hillingdon
+Ealing,Harrow
+Ealing,Hammersmith and Fulham
+Havering,Redbridge
+Hillingdon,Hounslow
+Harrow,Hillingdon
+Brent,Ealing
+Brent,Harrow
+Brent,Hammersmith and Fulham
+Brent,Kensington and Chelsea
+Brent,Westminster
+Brent,Camden
+Barnet,Harrow
+Barnet,Brent
+Barnet,Enfield
+Barnet,Camden
+Barnet,Haringey
+Lambeth,Southwark
+Lambeth,Merton
+Lambeth,Wandsworth
+Lewisham,Southwark
+Greenwich,Lewisham
+Bexley,Bromley
+Bexley,Greenwich
+Enfield,Waltham Forest
+Enfield,Haringey
+Redbridge,Waltham Forest
+Richmond upon Thames,Wandsworth
+Merton,Sutton
+Merton,Wandsworth
+Hammersmith and Fulham,Hounslow
+Hammersmith and Fulham,Kensington and Chelsea
+Kensington and Chelsea,Westminster
+Camden,Westminster
+Camden,Islington
+Camden,Haringey
+Camden,City of London
+Hackney,Waltham Forest
+Hackney,Tower Hamlets
+Hackney,Islington
+Hackney,Haringey
+Hackney,Newham
+Haringey,Waltham Forest
+Haringey,Islington
+Newham,Waltham Forest
+Newham,Redbridge
+Newham,Tower Hamlets
+Barking and Dagenham,Havering
+Barking and Dagenham,Redbridge
+Barking and Dagenham,Newham
+City of London,Westminster
+City of London,Tower Hamlets
+City of London,Islington
+City of London,Hackney
