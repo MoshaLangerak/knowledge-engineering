@@ -1,6 +1,6 @@
 import streamlit as st
 from queries.visualization_queries import get_bubble_chart_data
-from visualizations.borough_business_graph import plot_borough_bubble_chart
+from visualizations.borough_business_graph import plot_borough_bubble_chart, plot_borough_business_graph
 from connect import get_connection
 
 if "conn" not in st.session_state:
@@ -31,3 +31,6 @@ with st.expander("Show Queried Data Table"):
 # Plot
 fig = plot_borough_bubble_chart(data)
 st.plotly_chart(fig, use_container_width=True)
+
+fig2 = plot_borough_business_graph(data, borough)
+st.plotly_chart(fig2, use_container_width=True)
