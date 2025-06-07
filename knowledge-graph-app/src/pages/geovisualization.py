@@ -11,7 +11,6 @@ from visualizations.greater_london_map import (
     plot_interactive_map
 )
 
-st.set_page_config(layout="wide")
 st.title("Geography View")
 
 if "conn" not in st.session_state:
