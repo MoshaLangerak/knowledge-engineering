@@ -25,3 +25,15 @@ def get_bubble_chart_data(conn, borough_name, year, business_type):
             "business_to_population_ratio": ratio,
         })
     return data
+
+
+def query_people_business_ratio(conn, business_type):
+    query = f"""
+    MATCH (b:Borough)<-[:LOCATED_IN]-(bus:Business)-[:OF_TYPE]->(:BusinessType {{name: '{business_type}'}}),
+          (b)-[:HAS_POPULATION]->(p:Population)
+    RETURN b.name AS borough, 
+           COUNT(DISTINCT bus) AS business_count,
+           SUM(p.population) AS population
+    """
+    records, _, keys = conn.query(query)
+    return pd.DataFrame([r.data() for r in records])

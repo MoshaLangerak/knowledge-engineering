@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import geopandas as gpd
 
 
 # Why separate BusinessType nodes?
@@ -122,6 +123,10 @@ def import_business_survival_rate_data(conn, test_boroughs=[]):
     """
     conn.query(query, parameters={"rows": data})
     st.info("Business survival rate data import complete.")
+
+
+def import_borough_shapes():
+    return gpd.read_file("data/raw/gis-boundaries-london/ESRI/London_Borough_Excluding_MHW.shp")
 
 
 # # old population data import

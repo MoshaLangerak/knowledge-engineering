@@ -29,3 +29,15 @@ def get_business_count_for_boroughs(conn, borough_names, business_type):
     """
     result = conn.query(query, parameters={"borough_names": borough_names, "business_type": business_type})
     return {row["borough"]: row["business_count"] for row in result[0]} if result and result[0] else {}
+
+# Get all business types 
+def get_business_types(conn):
+    query = "MATCH (bt:BusinessType) RETURN bt.type AS type ORDER BY type"
+    records, _, _ = conn.query(query)
+    return [r["type"] for r in records]
+
+# Get all years
+def get_years(conn):
+    query = "MATCH (p:Population) RETURN DISTINCT p.year AS year ORDER BY year"
+    records, _, _ = conn.query(query)
+    return [r["year"] for r in records]
