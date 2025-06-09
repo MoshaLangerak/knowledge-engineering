@@ -1,4 +1,5 @@
 import plotly.express as px
+import pandas as pd
 
 def plot_generic_barchart(
     data,
@@ -54,4 +55,48 @@ def plot_generic_barchart(
         bargroupgap=0.1  # space between groups
     )
     fig.update_traces(marker_line_width=1.5, marker_line_color='black')
+    return fig
+
+def plot_distribution_barchart(
+    values,
+    item_value=None,
+    n_bins=10,
+    quantile_binning=False,
+    x_label="Value",
+    y_label="Count",
+    title="Distribution",
+    highlight_color="crimson",
+    bar_color="steelblue"
+):
+    """
+    Plots a vertical bar chart of the distribution of values, with optional quantile binning.
+    Highlights the bin containing item_value if provided.
+    """
+    values = pd.Series(values).dropna()
+    if quantile_binning:
+        bins = pd.qcut(values, q=n_bins, duplicates='drop')
+    else:
+        bins = pd.cut(values, bins=n_bins)
+    bin_counts = bins.value_counts().sort_index()
+    bin_labels = bin_counts.index.astype(str)
+
+    highlight_bin = None
+    if item_value is not None:
+        extended_values = pd.concat([values, pd.Series([item_value])], ignore_index=True)
+        if quantile_binning:
+            item_bin = pd.qcut(extended_values, q=n_bins, duplicates='drop').iloc[-1]
+        else:
+            item_bin = pd.cut(extended_values, bins=n_bins).iloc[-1]
+        highlight_bin = str(item_bin)
+
+    colors = [highlight_color if str(lbl) == highlight_bin else bar_color for lbl in bin_labels]
+
+    fig = px.bar(
+        x=bin_labels,
+        y=bin_counts.values,
+        labels={"x": x_label, "y": y_label},
+        title=title
+    )
+    fig.update_traces(marker_color=colors)
+    fig.update_layout(xaxis_tickangle=-45)
     return fig
