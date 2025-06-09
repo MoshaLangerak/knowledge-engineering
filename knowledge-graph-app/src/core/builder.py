@@ -19,7 +19,7 @@ def build_knowledge_graph(conn, test_boroughs=[]):
 
     # populate KG with nodes
     create_constraints_and_indexes(conn)
-    st.info()
+
     import_business_data(conn, test_boroughs)
     import_population_density_data(conn, test_boroughs)
     import_business_survival_rate_data(conn, test_boroughs)

@@ -62,7 +62,7 @@ def plot_borough_business_graph(data: List[Dict[str, Any]], selected_borough: st
 
         node_x.append(x)
         node_y.append(y)
-        sizes.append(max(10, population / 1000))
+        sizes.append(max(2, population / 2_500))
         colors.append(ratio)
         labels.append(node)
         hovers.append(

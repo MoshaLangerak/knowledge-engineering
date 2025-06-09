@@ -95,17 +95,16 @@ def import_business_survival_rate_data(conn, test_boroughs=[]):
         df = df[df["area"].isin(test_boroughs)]
     df = df.replace({np.nan: None})
 
-    # Only include non-null properties for each row
     def row_to_props(row):
         props = {
             "year": int(row["year"]),
+            "births": int(row["births"]) if row["births"] is not None else None,
+            "one_year_rate": float(row["1_year_survival_rate"]) if row["1_year_survival_rate"] is not None else None,
+            "two_year_rate": float(row["2_year_survival_rate"]) if row["2_year_survival_rate"] is not None else None,
+            "three_year_rate": float(row["3_year_survival_rate"]) if row["3_year_survival_rate"] is not None else None,
+            "four_year_rate": float(row["4_year_survival_rate"]) if row["4_year_survival_rate"] is not None else None,
+            "five_year_rate": float(row["5_year_survival_rate"]) if row["5_year_survival_rate"] is not None else None,
         }
-        if row["births"] is not None:
-            props["births"] = int(row["births"])
-        for n in range(1, 6):
-            col = f"{n}_year_survival_rate"
-            if row.get(col) is not None:
-                props[f"{n}_year_rate"] = float(row[col])
         return {
             "area": row["area"],
             "props": props
@@ -113,13 +112,19 @@ def import_business_survival_rate_data(conn, test_boroughs=[]):
 
     data = [row_to_props(row) for _, row in df.iterrows()]
 
-    # Create BusinessSurvival nodes and relationships, only setting non-null properties
     query = """
     UNWIND $rows AS row
     MATCH (b:Borough {name: row.area})
-    MERGE (bs:BusinessSurvival {year: row.props.year})
-    SET bs += row.props
-    MERGE (b)-[:HAS_BUSINESS_SURVIVAL {year: row.props.year}]->(bs)
+    MERGE (bs:BusinessSurvival {year: row.props.year, borough: row.area})
+    SET 
+        bs.year = row.props.year,
+        bs.births = row.props.births,
+        bs.one_year_rate = row.props.one_year_rate,
+        bs.two_year_rate = row.props.two_year_rate,
+        bs.three_year_rate = row.props.three_year_rate,
+        bs.four_year_rate = row.props.four_year_rate,
+        bs.five_year_rate = row.props.five_year_rate
+    MERGE (b)-[:HAS_SURVIVAL_RATE]->(bs)
     """
     conn.query(query, parameters={"rows": data})
     st.info("Business survival rate data import complete.")

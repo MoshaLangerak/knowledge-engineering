@@ -1,3 +1,21 @@
+#  Get all boroughs in the graph
+def get_all_boroughs(conn):
+    """
+    Returns a list of all borough names in the dataset, sorted alphabetically.
+    """
+    query = "MATCH (b:Borough) RETURN b.name AS name ORDER BY name"
+    records, _, _ = conn.query(query)
+    return [r["name"] for r in records]
+
+# Get all business types in the graph
+def get_all_business_types(conn):
+    """
+    Returns a list of all business types in the dataset, sorted alphabetically.
+    """
+    query = "MATCH (bt:BusinessType) RETURN bt.type AS type ORDER BY type"
+    records, _, _ = conn.query(query)
+    return [r["type"] for r in records]
+
 # Get the selected borough and its neighbours
 def get_borough_and_neighbours(conn, borough_name):
     query = """
@@ -41,3 +59,51 @@ def get_years(conn):
     query = "MATCH (p:Population) RETURN DISTINCT p.year AS year ORDER BY year"
     records, _, _ = conn.query(query)
     return [r["year"] for r in records]
+
+# Get population data for a list of boroughs over a range of years
+def get_population_for_boroughs_in_range(conn, borough_names, min_year=1999, max_year=2050):
+    """
+    Fetches all population data for a list of boroughs over a selected year range.
+    Returns a list of dicts: [{'borough': ..., 'year': ..., 'population': ...}, ...]
+    """
+    query = """
+    UNWIND $borough_names AS name
+    MATCH (b:Borough {name: name})-[:HAS_POPULATION]->(p:Population)
+    WHERE p.year >= $min_year AND p.year <= $max_year
+    RETURN b.name AS borough, p.year AS year, p.population AS population
+    ORDER BY borough, year
+    """
+    result = conn.query(
+        query,
+        parameters={
+            "borough_names": borough_names,
+            "min_year": min_year,
+            "max_year": max_year,
+        },
+    )
+    # result[0] is the list of records
+    return [row for row in result[0]] if result and result[0] else []
+
+# Get business survival rates for a list of boroughs and years
+def get_business_survival_rates_for_boroughs(conn, borough_names, year):
+    """
+    Fetches business survival rates for a list of boroughs for a single year.
+    Returns a list of dicts: [{'borough': ..., 'year': ..., 'one_year_rate': ..., ..., 'five_year_rate': ...}, ...]
+    """
+    query = """
+    UNWIND $borough_names AS name
+    MATCH (b:Borough {name: name})-[:HAS_SURVIVAL_RATE]->(s:BusinessSurvival)
+    WHERE s.year = $year
+    RETURN 
+        b.name AS borough, 
+        s.year AS year, 
+        s.births AS businesses_started,
+        s.one_year_rate AS one_year_rate, 
+        s.two_year_rate AS two_year_rate, 
+        s.three_year_rate AS three_year_rate, 
+        s.four_year_rate AS four_year_rate, 
+        s.five_year_rate AS five_year_rate
+    ORDER BY borough
+    """
+    result = conn.query(query, parameters={"borough_names": borough_names, "year": year})
+    return [row for row in result[0]] if result and result[0] else []

@@ -46,7 +46,7 @@ class Neo4jConnection:
 def get_connection():
     try:
         conn = Neo4jConnection(NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD)
-        st.info("Successfully connected to Neo4j!")
+        st.success("Successfully connected to Neo4j!")
         return conn
     except Exception as e:
        st.error(f"Failed to connect to Neo4j. Aborting build. {e}")
