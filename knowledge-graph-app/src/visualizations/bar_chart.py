@@ -1,5 +1,6 @@
 import plotly.express as px
 import pandas as pd
+import streamlit as st
 
 def plot_generic_barchart(
     data,
@@ -71,20 +72,31 @@ def plot_distribution_barchart(
     """
     Plots a vertical bar chart of the distribution of values, with optional quantile binning.
     Highlights the bin containing item_value if provided.
+    For quantile binning, x labels are quantile numbers (e.g., Q1, Q2, ...).
     """
     values = pd.Series(values).dropna()
     if quantile_binning:
-        bins = pd.qcut(values, q=n_bins, duplicates='drop')
+        quantile_labels = [f"{int(100*i/n_bins)}-{int(100*(i+1)/n_bins)}%" for i in range(n_bins)]
+        try:
+            bins = pd.qcut(values, q=n_bins, labels=quantile_labels, duplicates='drop')
+        except ValueError as e:
+            st.warning(
+                "Could not create the requested number of quantile bins. "
+                "Try reducing the number of bins or check your data for duplicate values."
+            )
+            return px.bar()
+        bin_counts = bins.value_counts().sort_index()
+        bin_labels = bin_counts.index.tolist()
     else:
         bins = pd.cut(values, bins=n_bins)
-    bin_counts = bins.value_counts().sort_index()
-    bin_labels = bin_counts.index.astype(str)
+        bin_counts = bins.value_counts().sort_index()
+        bin_labels = bin_counts.index.astype(str)
 
     highlight_bin = None
     if item_value is not None:
         extended_values = pd.concat([values, pd.Series([item_value])], ignore_index=True)
         if quantile_binning:
-            item_bin = pd.qcut(extended_values, q=n_bins, duplicates='drop').iloc[-1]
+            item_bin = pd.qcut(extended_values, q=n_bins, labels=quantile_labels, duplicates='drop').iloc[-1]
         else:
             item_bin = pd.cut(extended_values, bins=n_bins).iloc[-1]
         highlight_bin = str(item_bin)
@@ -98,5 +110,5 @@ def plot_distribution_barchart(
         title=title
     )
     fig.update_traces(marker_color=colors)
-    fig.update_layout(xaxis_tickangle=-45)
+    fig.update_layout(xaxis_tickangle=-45, bargap=0.05)
     return fig

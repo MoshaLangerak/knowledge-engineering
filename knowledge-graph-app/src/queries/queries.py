@@ -48,6 +48,20 @@ def get_business_count_for_boroughs(conn, borough_names, business_type):
     result = conn.query(query, parameters={"borough_names": borough_names, "business_type": business_type})
     return {row["borough"]: row["business_count"] for row in result[0]} if result and result[0] else {}
 
+# Get number of businesses of a type in each borough (all boroughs)
+def get_business_count_for_all_boroughs(conn, business_type):
+    """
+    Returns a dict {borough: business_count} for all boroughs for the given business type.
+    """
+    query = """
+    MATCH (b:Borough)
+    OPTIONAL MATCH (b)<-[:LOCATED_IN]-(bus:Business)-[:OF_TYPE]->(bt:BusinessType {type: $business_type})
+    RETURN b.name AS borough, count(bus) AS business_count
+    ORDER BY borough
+    """
+    result = conn.query(query, parameters={"business_type": business_type})
+    return {row["borough"]: row["business_count"] for row in result[0]} if result and result[0] else {}
+
 # Get all business types 
 def get_business_types(conn):
     query = "MATCH (bt:BusinessType) RETURN bt.type AS type ORDER BY type"
@@ -107,3 +121,9 @@ def get_business_survival_rates_for_boroughs(conn, borough_names, year):
     """
     result = conn.query(query, parameters={"borough_names": borough_names, "year": year})
     return [row for row in result[0]] if result and result[0] else []
+
+# Get distinct years for business survival rates
+def get_survival_years(conn):
+    query = "MATCH (s:BusinessSurvival) RETURN DISTINCT s.year AS year ORDER BY year"
+    records, _, _ = conn.query(query)
+    return [r["year"] for r in records]
