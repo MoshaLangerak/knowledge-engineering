@@ -11,8 +11,6 @@ from visualizations.greater_london_map import (
     plot_interactive_map
 )
 
-st.title("Geography View")
-
 if "conn" not in st.session_state:
     st.session_state.conn = get_connection()
     
@@ -31,13 +29,16 @@ if "last_year" not in st.session_state:
 business_types = get_business_types(conn)
 years = get_years(conn)
 
-business_type = st.selectbox("Choose a business type:", business_types)
-year = st.selectbox("Select a population year:", years)
+with st.sidebar:
+    business_type = st.selectbox("Choose a business type:", business_types)
+    year = st.selectbox("Select a population year:", years)
 
-inputs_changed = (
-    st.session_state.last_business_type != business_type
-    or st.session_state.last_year != year
-)
+    inputs_changed = (
+        st.session_state.last_business_type != business_type
+        or st.session_state.last_year != year
+    )
+
+st.header(f"Geographic View of {business_type} Businesses in {year}")
 
 # If business type or year input has changed, than the map is rendered again. 
 if inputs_changed:
@@ -66,7 +67,7 @@ if st.session_state.ratio_gdf is not None:
             f"Missing data for: {missing_boroughs[0]}" if len(missing_boroughs) == 1
             else "Missing data for: " + ", ".join(missing_boroughs[:-1]) + f" and {missing_boroughs[-1]}"
         )
-        st.warning(message)
+        # st.warning(message)
 
 # Display the map
 if st.session_state.map_data is not None:
