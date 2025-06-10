@@ -57,7 +57,7 @@ if inputs_changed:
 # Check if any boroughs miss people per business data. If so, inform the user on the interface
 if st.session_state.ratio_gdf is not None:
     missing_data = st.session_state.ratio_gdf[
-        st.session_state.ratio_gdf['people_per_business'].isnull()
+        st.session_state.ratio_gdf['businesses_per_person'].isnull()
     ]
     
     if len(missing_data) > 0:
@@ -78,4 +78,4 @@ if st.session_state.map_data is not None:
         returned_objects=[]  
     )
     
-st.write("Click on borough to see the number of people per business")
+st.write("Click on borough to see the number of businesses per 10k people")
