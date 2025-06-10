@@ -24,7 +24,7 @@ def plot_interactive_map(gdf, business_type, year):
     gdf = gdf.dropna(subset=["businesses_per_person"])
     m = folium.Map(location=[51.509865, -0.118092], zoom_start=10)
 
-    choropleth = folium.Choropleth(
+    folium.Choropleth(
         geo_data=gdf.to_json(),
         name="choropleth",
         data=gdf,
@@ -34,23 +34,29 @@ def plot_interactive_map(gdf, business_type, year):
         fill_opacity=0.7,
         line_opacity=0.2,
         legend_name=f"Number of {business_type} businesses per 10k people in ({year})",
+        highlight=True,
+        highlight_function=lambda feature: {'color':'transparent'}
     ).add_to(m)
-
-    choropleth.geojson.add_child(
-        folium.features.GeoJsonTooltip(
-            fields=["borough", "businesses_per_person"],
-            aliases=["Borough:", f"{business_type.title()} businesses per 10k:"],
-            localize=True,                    # 1 000-separator if locale set
-            labels=True,                      # show the aliases
-            sticky=False,                     # tooltip follows the mouse
-            style=(
-                "background-color: white; "
-                "border: 1px solid black; "
-                "border-radius: 3px; "
-                "padding: 5px;"
-            ),
-        )
-    )
-
+    
+    
+    # choropleth.geojson.add_child(
+    #     folium.features.GeoJsonTooltip(
+    #         fields=["borough", "businesses_per_person"],
+    #         aliases=["Borough:", f"{business_type.title()} businesses per 10k:"],
+    #         localize=True,                    
+    #         labels=True,                     
+    #         sticky=False,                     
+    #     )
+    # )
+    
+    for _, row in gdf.iterrows():
+        if pd.notna(row.get("businesses_per_person")):
+            folium.Popup(f"{row['borough']}: {row['businesses_per_person']:.2f}").add_to(
+                folium.Marker(
+                    location=[row.geometry.centroid.y, row.geometry.centroid.x],
+                    icon=folium.DivIcon(html=f"<div style='font-size: 10pt'>{row['borough']}</div>")
+                ).add_to(m)
+            )
+        
     return m
 
