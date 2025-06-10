@@ -11,6 +11,8 @@ from visualizations.greater_london_map import (
     plot_interactive_map
 )
 
+st.set_page_config(layout="wide")
+
 if "conn" not in st.session_state:
     st.session_state.conn = get_connection()
     
