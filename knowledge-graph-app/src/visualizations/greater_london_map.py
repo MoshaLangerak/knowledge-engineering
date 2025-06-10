@@ -1,4 +1,3 @@
-
 import folium
 from queries.queries import (
     get_population_for_boroughs, 
@@ -55,13 +54,11 @@ def plot_interactive_map(gdf, business_type, year):
 
     # Add always-visible borough name labels at centroid
     for _, row in gdf.iterrows():
-        folium.Popup(f"{row['borough']}: {row['businesses_per_person']:.2f}").add_to(
-            folium.map.Marker(
-                [row.geometry.centroid.y, row.geometry.centroid.x],
-                icon=folium.DivIcon(
-                    html=f"""<div style="font-size: 10pt; color: black; text-align: center;">{row['borough']}</div>"""
-                ),
-                tooltip=row['borough']
-            )
+        folium.map.Marker(
+            [row.geometry.centroid.y, row.geometry.centroid.x],
+            icon=folium.DivIcon(
+                html=f"""<div style="font-size: 10pt; color: black; text-align: center;">{row['borough']}</div>"""
+            ),
+            tooltip=row['borough']
         ).add_to(m)
     return m
