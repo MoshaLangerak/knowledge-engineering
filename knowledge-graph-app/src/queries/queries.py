@@ -26,7 +26,6 @@ def get_borough_and_neighbours(conn, borough_name):
     result = conn.query(query, parameters={"borough_name": borough_name})
     return result[0][0]["borough_names"] if result and result[0] else []
 
-
 # Get population for each borough in a given year
 def get_population_for_boroughs(conn, borough_names, year):
     query = """
@@ -36,7 +35,6 @@ def get_population_for_boroughs(conn, borough_names, year):
     """
     result = conn.query(query, parameters={"borough_names": borough_names, "year": year})
     return {row["borough"]: row["population"] for row in result[0]} if result and result[0] else {}
-
 
 # Get number of businesses of a type in each borough
 def get_business_count_for_boroughs(conn, borough_names, business_type):

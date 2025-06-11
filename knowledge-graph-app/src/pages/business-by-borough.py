@@ -4,7 +4,7 @@ from queries.queries import (
     get_population_for_boroughs, get_business_count_for_boroughs,
     get_business_survival_rates_for_boroughs, get_all_boroughs, get_all_business_types
 )
-from visualizations.borough_business_graph import plot_borough_business_graph
+from visualizations.borough_business_graph import plot_borough_scatter
 from visualizations.bar_chart import plot_generic_barchart
 from connect import get_connection
 import pandas as pd
@@ -22,7 +22,9 @@ year = st.session_state.get("year_sidebar", 2020)
 business_type = st.session_state.get("business_type_sidebar", "pub")
 
 # ---- Retrieve Data ----
-borough_names = get_borough_and_neighbours(conn, borough)
+borough_names = get_all_boroughs(conn)
+# filter the boroughs to not use 'City of London', 'Inner London', 'Outer London'
+borough_names = [b for b in borough_names if b not in ["City of London", "Inner London", "Outer London", "Greater London"]]
 populations = get_population_for_boroughs(conn, borough_names, year)
 business_counts = get_business_count_for_boroughs(conn, borough_names, business_type)
 
@@ -30,7 +32,7 @@ data = []
 for b in borough_names:
     pop = populations.get(b, 0)
     bus = business_counts.get(b, 0)
-    ratio = (bus / pop * 10000) if pop else 0  # per 10,000 people
+    ratio = (pop / bus) if bus else 0  # per 10,000 people
     data.append({
         "borough": b,
         "population": pop,
@@ -39,7 +41,7 @@ for b in borough_names:
     })
 
 st.subheader(f"Business Density in and around {borough} ({year}) - {business_type.capitalize()}s")
-fig2 = plot_borough_business_graph(data, borough)
+fig2 = plot_borough_scatter(data, borough)
 st.plotly_chart(fig2, use_container_width=True)
 
 # --- Growth Rate and Survival Rate Visualizations ---
@@ -60,7 +62,7 @@ with st.sidebar:
     borough = st.selectbox(
         "Select Borough", 
         options=all_boroughs,
-        index=all_boroughs.index("Merton") if "Merton" in all_boroughs else 0,
+        index=all_boroughs.index(borough) if borough in all_boroughs else 0,
         key="borough_sidebar"
     )
     year = st.selectbox(
@@ -72,7 +74,7 @@ with st.sidebar:
     business_type = st.selectbox(
         "Select Business Type",
         options=all_business_types, 
-        index=all_business_types.index("restaurant") if "restaurant" in all_business_types else 0,
+        index=all_business_types.index(business_type) if business_type in all_business_types else 0,
         key="business_type_sidebar"
     )
     # Initialize session state for slider values
