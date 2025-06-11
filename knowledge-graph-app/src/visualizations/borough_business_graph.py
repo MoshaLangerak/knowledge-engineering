@@ -184,9 +184,7 @@ def plot_borough_scatter(data: List[Dict[str, Any]], selected_borough: str) -> g
             name=selected_borough
         ))
 
-      # --- Visual Cues for Plot Quadrants ---
-    
-    
+    # --- Visual Cues for Plot Quadrants ---
     # Calculate boundaries and midpoints for shading and annotations
     x_max = df['population'].max() * 1.05
     y_max = df['business_to_population_ratio'].max() * 1.05
@@ -203,12 +201,10 @@ def plot_borough_scatter(data: List[Dict[str, Any]], selected_borough: str) -> g
         #     font=dict(size=20)
         # ),
         xaxis_title="Population",
-        yaxis_title="Business to People Ratio",
+        yaxis_title="People to Business Ratio",
         legend_title="Boroughs",
         hovermode='closest',
         margin=dict(l=40, r=40, t=40, b=40),
-        # paper_bgcolor='rgba(248, 249, 250, 1)',
-        # plot_bgcolor='rgba(255, 255, 255, 1)',
         xaxis=dict(gridcolor='rgba(236, 240, 241, 1)'),
         yaxis=dict(gridcolor='rgba(236, 240, 241, 1)'),
         # Add shapes to shade the quadrants

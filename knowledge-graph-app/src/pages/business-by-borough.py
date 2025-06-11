@@ -1,6 +1,6 @@
 import streamlit as st
 from queries.queries import (
-    get_population_for_boroughs_in_range, get_years, get_borough_and_neighbours,
+    get_population_for_boroughs_in_range, get_years,
     get_population_for_boroughs, get_business_count_for_boroughs,
     get_business_survival_rates_for_boroughs, get_all_boroughs, get_all_business_types
 )
@@ -40,7 +40,7 @@ for b in borough_names:
         "business_to_population_ratio": ratio,
     })
 
-st.subheader(f"Business Density in and around {borough} ({year}) - {business_type.capitalize()}s")
+st.subheader(f"Business Density and Population size ({year} - {business_type.capitalize()}s - {borough.capitalize()})")
 fig2 = plot_borough_scatter(data, borough)
 st.plotly_chart(fig2, use_container_width=True)
 
