@@ -1,6 +1,6 @@
 import streamlit as st
 from queries.queries import (
-    get_population_for_boroughs_in_range, get_years,
+    get_population_for_boroughs_in_range, get_years, get_borough_and_neighbours,
     get_population_for_boroughs, get_business_count_for_boroughs,
     get_business_survival_rates_for_boroughs, get_all_boroughs, get_all_business_types
 )
@@ -19,21 +19,34 @@ conn = st.session_state.conn
 # Map sidebar keys to main keys for backward compatibility
 borough = st.session_state.get("borough_sidebar", "Merton")
 year = st.session_state.get("year_sidebar", 2020)
-business_type = st.session_state.get("business_type_sidebar", "pub")
+business_type = st.session_state.get("business_type_sidebar", "atm")
 
 # ---- Retrieve Data ----
-borough_names = get_all_boroughs(conn)
+all_borough_names = get_all_boroughs(conn)
+neighbour_borough_names = get_borough_and_neighbours(conn, borough)
 # filter the boroughs to not use 'City of London', 'Inner London', 'Outer London'
-borough_names = [b for b in borough_names if b not in ["City of London", "Inner London", "Outer London", "Greater London"]]
-populations = get_population_for_boroughs(conn, borough_names, year)
-business_counts = get_business_count_for_boroughs(conn, borough_names, business_type)
+all_borough_names = [b for b in all_borough_names if b not in ["City of London", "Inner London", "Outer London", "Greater London"]]
+populations = get_population_for_boroughs(conn, all_borough_names, year)
+business_counts = get_business_count_for_boroughs(conn, all_borough_names, business_type)
 
-data = []
-for b in borough_names:
+data1 = []
+for b in all_borough_names:
     pop = populations.get(b, 0)
     bus = business_counts.get(b, 0)
     ratio = (pop / bus) if bus else 0  # per 10,000 people
-    data.append({
+    data1.append({
+        "borough": b,
+        "population": pop,
+        "business_count": bus,
+        "business_to_population_ratio": ratio,
+    })
+
+data2 = []
+for b in neighbour_borough_names:
+    pop = populations.get(b, 0)
+    bus = business_counts.get(b, 0)
+    ratio = (pop / bus) if bus else 0  # per 10,000 people
+    data2.append({
         "borough": b,
         "population": pop,
         "business_count": bus,
@@ -41,7 +54,7 @@ for b in borough_names:
     })
 
 st.subheader(f"Business Density and Population size ({year} - {business_type.capitalize()}s - {borough.capitalize()})")
-fig2 = plot_borough_scatter(data, borough)
+fig2 = plot_borough_scatter(data1, borough)
 st.plotly_chart(fig2, use_container_width=True)
 
 # --- Growth Rate and Survival Rate Visualizations ---
@@ -68,7 +81,7 @@ with st.sidebar:
     year = st.selectbox(
         "Select Year", 
         options=all_years,
-        index=all_years.index(2025) if 2025 in all_years else 0, 
+        index=all_years.index(year) if year in all_years else 0, 
         key="year_sidebar"
     )
     business_type = st.selectbox(
@@ -146,7 +159,7 @@ selected_years = [st.session_state.start_year, st.session_state.middle_year, st.
 if st.session_state.middle_year != middle_year_2:
     st.warning("The middle year must be the same in both sliders. Adjust the sliders so the end of the first matches the start of the second.")
 else:
-    pop_data = get_population_for_boroughs_in_range(conn, borough_names, st.session_state.start_year, st.session_state.end_year)
+    pop_data = get_population_for_boroughs_in_range(conn, neighbour_borough_names, st.session_state.start_year, st.session_state.end_year)
     pop_df = pd.DataFrame(pop_data, columns=['borough', 'year', 'population'])
     if not pop_df.empty:
         pop_df['year'] = pd.to_numeric(pop_df['year'], errors='coerce')
@@ -172,7 +185,7 @@ else:
     else:
         growth_df = pd.DataFrame(columns=['borough', 'period', 'growth_rate'])
 
-    survival_data = get_business_survival_rates_for_boroughs(conn, borough_names, st.session_state.middle_year)
+    survival_data = get_business_survival_rates_for_boroughs(conn, neighbour_borough_names, st.session_state.middle_year)
     survival_df = pd.DataFrame(survival_data, columns=[
         "borough",
         "year",
@@ -195,7 +208,7 @@ else:
 
     chart_col1, chart_col2 = st.columns([1, 1], gap="large")
     with chart_col1:
-        st.subheader(f"Population Growth Rate by Borough")
+        st.subheader(f"Population Growth Rate by Borough for {borough} and neighbouring boroughs")
         if not growth_df.empty:
             fig_growth = plot_generic_barchart(
                 growth_df,
@@ -214,7 +227,7 @@ else:
         else:
             st.info("No growth rate data available for the selected boroughs and years.")
     with chart_col2:
-        st.subheader(f"Business Survival Rate by Borough ({st.session_state.middle_year})")
+        st.subheader(f"Business Survival Rate by Borough for {borough} and neighbouring boroughs ({st.session_state.middle_year})")
         if not survival_df.empty:
             period_labels = {
                 'one_year_rate': '1 Year',
