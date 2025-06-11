@@ -58,8 +58,15 @@ pip install -r requirements.txt
 - Go to the Neo4j Desktop application, select the three dots next to your database, and click on **"Open Folder"**.
 - Select the `import` folder and move the CSV files there.
 
-### 4. Run the Project
+### 4. Start the Neo4j Database
+- In the Neo4j Desktop application, click on the **"Start"** button next to your database to start it.
+
+### 5. Run the Project
 - To run the project, execute the following command in your terminal:
 ```bash
-python streamlit run .\knowledge-graph-app\src\app.py
+streamlit run .\knowledge-graph-app\src\app.py
 ```
+
+### 6. Build the Knowledge Graph (if not already built)
+- If you haven't built the knowledge graph yet, clivk the **"Build Knowledge Graph"** button in the Streamlit app.
+- Note that this step may take some time, however, it only needs to be done once.
