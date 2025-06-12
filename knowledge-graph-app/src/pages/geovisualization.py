@@ -40,7 +40,7 @@ with st.sidebar:
         or st.session_state.last_year != year
     )
 
-st.header(f"Geographic View of {business_type} Businesses in {year}")
+st.header(f"Geographic View of People to {business_type} Business Ratio in {year}")
 
 # If business type or year input has changed, than the map is rendered again. 
 if inputs_changed:
@@ -60,7 +60,7 @@ if inputs_changed:
 # Check if any boroughs miss people per business data. If so, inform the user on the interface
 if st.session_state.ratio_gdf is not None:
     missing_data = st.session_state.ratio_gdf[
-        st.session_state.ratio_gdf['businesses_per_person'].isnull()
+        st.session_state.ratio_gdf['people_per_business'].isnull()
     ]
     
     if len(missing_data) > 0:
@@ -81,4 +81,4 @@ if st.session_state.map_data is not None:
         returned_objects=[]  
     )
     
-st.write("Click on borough to see the number of businesses per 10k people")
+st.write("Click on borough to see the people per business ratio.")

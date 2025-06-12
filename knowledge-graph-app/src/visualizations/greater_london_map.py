@@ -12,34 +12,34 @@ def compute_ratio_dataframe(conn, gdf, business_type, year):
     gdf["business_count"] = gdf["borough"].map(get_business_count_for_boroughs(conn, gdf["borough"], business_type))
     gdf["business_count"].replace(0, None, inplace=True)
 
-    gdf["businesses_per_person"] = (gdf["business_count"] / gdf["population"] * 10000).round(3)
+    gdf["people_per_business"] = (gdf["population"]/ gdf["business_count"]).round(3)
     return gdf
 
 
 # Computes the geovisualization (e.g. the polygons for boroughs)
 def plot_interactive_map(gdf, business_type, year):
     gdf = gdf.to_crs(4326)                    
-    gdf = gdf.dropna(subset=["businesses_per_person"])
+    gdf = gdf.dropna(subset=["people_per_business"])
     m = folium.Map(location=[51.509865, -0.118092], zoom_start=10)
 
     choropleth = folium.Choropleth(
         geo_data=gdf.to_json(),
         name="choropleth",
         data=gdf,
-        columns=["borough", "businesses_per_person"],
+        columns=["borough", "people_per_business"],
         key_on="feature.properties.borough",
         fill_color="OrRd",
         fill_opacity=0.7,
         line_opacity=0.2,
-        legend_name=f"Number of {business_type} businesses per 10k people in ({year})",
+        legend_name=f"Number of people per {business_type} business in ({year})",
         highlight=True,
         highlight_function=lambda feature: {'color':'transparent'}
     ).add_to(m)
 
     choropleth.geojson.add_child(
         folium.features.GeoJsonTooltip(
-            fields=["borough", "businesses_per_person"],
-            aliases=["Borough:", f"{business_type.title()} businesses per 10k:"],
+            fields=["borough", "people_per_business"],
+            aliases=["Borough:", f"People per {business_type.title()} business:"],
             localize=True,
             labels=True,
             sticky=False,
