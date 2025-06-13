@@ -62,7 +62,7 @@ def plot_distribution_barchart(
     values,
     item_value=None,
     n_bins=10,
-    quantile_binning=False,
+    precision=0,  # Added precision as a parameter for clarity
     x_label="Value",
     y_label="Count",
     title="Distribution",
@@ -70,45 +70,43 @@ def plot_distribution_barchart(
     bar_color="steelblue"
 ):
     """
-    Plots a vertical bar chart of the distribution of values, with optional quantile binning.
-    Highlights the bin containing item_value if provided.
-    For quantile binning, x labels are quantile numbers (e.g., Q1, Q2, ...).
+    Plots a vertical bar chart of the distribution of values.
+    Highlights the bin containing item_value if provided. This version is corrected
+    to work with any precision setting.
     """
     values = pd.Series(values).dropna()
-    if quantile_binning:
-        quantile_labels = [f"{int(100*i/n_bins)}-{int(100*(i+1)/n_bins)}%" for i in range(n_bins)]
-        try:
-            bins = pd.qcut(values, q=n_bins, labels=quantile_labels, duplicates='drop')
-        except ValueError as e:
-            st.warning(
-                "Could not create the requested number of quantile bins. "
-                "Try reducing the number of bins or check your data for duplicate values."
-            )
-            return px.bar()
-        bin_counts = bins.value_counts().sort_index()
-        bin_labels = bin_counts.index.tolist()
+
+    # Create bins with the specified precision
+    bins = pd.cut(values, bins=n_bins, precision=precision)
+    bin_counts = bins.value_counts().sort_index()
+
+    if precision == 0:
+        # Convert intervals to strings and remove '.0' to show as integers
+        bin_labels = [str(iv).replace('.0', '') for iv in bin_counts.index]
     else:
-        bins = pd.cut(values, bins=n_bins)
-        bin_counts = bins.value_counts().sort_index()
+        # For other precisions, use the default string representation
         bin_labels = bin_counts.index.astype(str)
 
-    highlight_bin = None
+    highlight_index = None
     if item_value is not None:
-        extended_values = pd.concat([values, pd.Series([item_value])], ignore_index=True)
-        if quantile_binning:
-            item_bin = pd.qcut(extended_values, q=n_bins, labels=quantile_labels, duplicates='drop').iloc[-1]
-        else:
-            item_bin = pd.cut(extended_values, bins=n_bins).iloc[-1]
-        highlight_bin = str(item_bin)
+        # Find which bin interval contains the item_value
+        for i, interval in enumerate(bin_counts.index):
+            if item_value in interval:
+                highlight_index = i
+                break
 
-    colors = [highlight_color if str(lbl) == highlight_bin else bar_color for lbl in bin_labels]
-
+    # Create the list of colors based on the found index
+    colors = [bar_color] * len(bin_counts)
+    if highlight_index is not None:
+        colors[highlight_index] = highlight_color
+    
     fig = px.bar(
         x=bin_labels,
         y=bin_counts.values,
         labels={"x": x_label, "y": y_label},
         title=title
     )
+    # Use the new color list to set the marker colors
     fig.update_traces(marker_color=colors)
     fig.update_layout(xaxis_tickangle=-45, bargap=0.05)
     return fig

@@ -60,8 +60,7 @@ if dist_type == "Business Density":
         ratios,
         item_value=highlight_value,
         n_bins=n_bins,
-        quantile_binning=False,
-        x_label="People per Business Ratio",
+        x_label="Numper of People per Business",
         y_label="Number of Boroughs",
         title=f"Distribution of People to {business_type} Business Ratio in {year}"
     )
@@ -164,7 +163,7 @@ if selected_business_types:
             title=f"Distribution of People-to-Business Ratios in {year}",
             labels={
                 "business_type": "Business Type",
-                "ratio": "People per Business Ratio"
+                "ratio": "Number of People per Business"
             },
             notched=False # Adds a notch to show confidence interval around the median
         )
@@ -199,7 +198,7 @@ if selected_business_types:
         st.plotly_chart(fig_dist, use_container_width=True)
         st.caption("This plot shows the smoothed probability density of the people-to-business ratio. Peaks in the lines indicate where the ratio is most common for a given business type.")
 
-        # --- Visualization 2: Grouped Histogram (replaces Density Plot) ---
+        # --- Visualization 2: Grouped Histogram ---
         st.markdown("---")
         st.subheader("Histogram of Business Density (Focused View)")
 
@@ -227,7 +226,7 @@ if selected_business_types:
             fig_hist.update_layout(
                 barmode='group',
                 title_text='Histogram of People-to-Business Ratios',
-                xaxis_title_text='People per Business Ratio',
+                xaxis_title_text='Number of People per Business',
                 yaxis_title_text='Number of Boroughs',
                 legend_title_text='Business Type'
             )
